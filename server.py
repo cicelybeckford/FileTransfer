@@ -3,18 +3,17 @@ from threading import Thread
 from SocketServer import ThreadingMixIn
 
 TCP_IP = 'localhost'
-TCP_PORT = 9001
+TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
 class ClientThread(Thread):
-
-    def __init__(self,ip,port,sock):
+    
+    def __init__(self,addr,sock):
         Thread.__init__(self)
-        self.ip = ip
-        self.port = port
+        self.addr = addr
         self.sock = sock
-        print " New thread started for "+ip+":"+str(port)
-
+        print " New thread started for " +str(addr)
+    
     def run(self):
         filename='mytext.txt'
         f = open(filename,'rb')
@@ -29,7 +28,7 @@ class ClientThread(Thread):
                 self.sock.close()
                 break
 
-tcpsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+tcpsock = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 tcpsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 tcpsock.bind((TCP_IP, TCP_PORT))
 threads = []
@@ -37,11 +36,12 @@ threads = []
 while True:
     tcpsock.listen(5)
     print "Waiting for incoming connections..."
-    (conn, (ip,port)) = tcpsock.accept()
-    print 'Got connection from ', (ip,port)
-    newthread = ClientThread(ip,port,conn)
+    (conn, addr) = tcpsock.accept()
+    print 'Got connection from ', (conn, addr)
+    newthread = ClientThread(addr,conn)
     newthread.start()
     threads.append(newthread)
 
 for t in threads:
     t.join()
+
