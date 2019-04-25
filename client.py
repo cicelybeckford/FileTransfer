@@ -1,24 +1,33 @@
 import socket
 
-TCP_IP = 'fdef:7597:b371:0:56dc:7907:ee4a:7a64'
+TCP_IP = 'fd7a:cef:2cae:0:5b57:5010:9122:3cc5'
 TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
+
+filename = "mytextt.txt"
+s.send(filename)
+
 with open('received_file', 'wb') as f:
-    print 'file opened'
     while True:
         #print('receiving data...')
         data = s.recv(BUFFER_SIZE)
-        print('data=%s', (data))
-        if not data:
-            f.close()
-            print 'file close()'
+        if data == '-1':
+            output = 'Error: File not found'
             break
-        # write data to a file
-        f.write(data)
+        else:
+            if not data:
+                f.close()
+                print 'file closed'
+                break
+            print 'file opened'
+            print('data= %s' % data)
+            output = 'Successfully got the file'
+            # write data to a file
+            f.write(data)
 
-print('Successfully get the file')
+print(output)
 s.close()
 print('connection closed')
