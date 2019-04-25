@@ -1,6 +1,6 @@
 import socket
 
-TCP_IP = 'localhost'
+TCP_IP = 'fdef:7597:b371:0:56dc:7907:ee4a:7a64'
 TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
