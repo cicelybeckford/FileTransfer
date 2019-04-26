@@ -1,9 +1,10 @@
 import socket
 from threading import Thread
 import os
+import cipher
 from SocketServer import ThreadingMixIn
 
-TCP_IP = 'fd7a:cef:2cae:0:5f21:91d6:523b:d372'
+TCP_IP = 'localhost'
 TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
@@ -19,15 +20,15 @@ class ClientThread(Thread):
     def run(self):
         exists = os.path.isfile(self.filename)
         if exists:
-            f = open(self.filename,'rb')
+            file = open(self.filename,'rb')
             while True:
-                l = f.read(BUFFER_SIZE)
-                while (l):
-                    self.sock.send(l)
-                    # print('Sent ',repr(l))
-                    l = f.read(BUFFER_SIZE)
-                if not l:
-                    f.close()
+                line = file.read(BUFFER_SIZE)
+                while (line):
+                    msg = cipher.encrypt_message(line)
+                    self.sock.send(msg)
+                    line = file.read(BUFFER_SIZE)
+                if not line:
+                    file.close()
                     self.sock.close()
                     break
         else:
@@ -43,10 +44,10 @@ threads = []
 while True:
     tcpsock.listen(5)
     print "Waiting for incoming connections..."
-    #(conn, (ip,port)) = tcpsock.accept()
     conn, addr = tcpsock.accept()
     print 'Got connection from ', addr
-    filename = conn.recv(BUFFER_SIZE)
+    encrypted_filename = conn.recv(BUFFER_SIZE)
+    filename = cipher.decrypt_message(encrypted_filename)
     newthread = ClientThread(addr, conn, filename)
     newthread.start()
     threads.append(newthread)

@@ -1,19 +1,22 @@
 import socket
+import cipher
 
-TCP_IP = 'fd7a:cef:2cae:0:5b57:5010:9122:3cc5'
+
+TCP_IP = 'localhost'
 TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
 s = socket.socket(socket.AF_INET6, socket.SOCK_STREAM)
 s.connect((TCP_IP, TCP_PORT))
 
-filename = "mytextt.txt"
-s.send(filename)
+filename = "infile.txt"
+ciphertext = cipher.encrypt_message(filename)
+s.send(ciphertext)
 
 with open('received_file', 'wb') as f:
     while True:
-        #print('receiving data...')
-        data = s.recv(BUFFER_SIZE)
+        encrypted_data = s.recv(BUFFER_SIZE)
+        data = cipher.decrypt_message(encrypted_data)
         if data == '-1':
             output = 'Error: File not found'
             break
@@ -23,9 +26,8 @@ with open('received_file', 'wb') as f:
                 print 'file closed'
                 break
             print 'file opened'
-            print('data= %s' % data)
+            print('data = %s' % data)
             output = 'Successfully got the file'
-            # write data to a file
             f.write(data)
 
 print(output)
