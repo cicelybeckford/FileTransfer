@@ -4,13 +4,14 @@ import os
 import cipher
 from SocketServer import ThreadingMixIn
 
-TCP_IP = 'fd0c:f878:8201:0:1b4b:3726:fafe:5efa'
+TCP_IP = 'localhost'
 TCP_PORT = 7777
 BUFFER_SIZE = 1024
 
+
 class ClientThread(Thread):
 
-    def __init__(self,addr,sock,filename):
+    def __init__(self, addr, sock, filename):
         Thread.__init__(self)
         self.addr = addr
         self.sock = sock
@@ -20,19 +21,20 @@ class ClientThread(Thread):
     def run(self):
         exists = os.path.isfile(self.filename)
         if exists:
-            f = open(self.filename,'rb')
+            data = open(self.filename, 'rb')
             while True:
-                l = f.read(BUFFER_SIZE)
-                while (l):
-                    self.sock.send(cipher.encrypt(l))
-                    # print('Sent ',repr(l))
-                    l = f.read(BUFFER_SIZE)
-                if not l:
-                    f.close()
+                line = data.read(BUFFER_SIZE)
+                while (line):
+                    msg = cipher.encrypt_message(line)
+                    self.sock.send(msg)
+                    line = data.read(BUFFER_SIZE)
+                if not line:
+                    data.close()
                     self.sock.close()
                     break
         else:
-            self.sock.send(cipher.encrypt("-1"))
+            msg = cipher.encrypt_message("-1")
+            self.sock.send(msg)
             self.sock.close()
 
 
@@ -44,16 +46,10 @@ threads = []
 while True:
     tcpsock.listen(5)
     print "Waiting for incoming connections..."
-    #(conn, (ip,port)) = tcpsock.accept()
     conn, addr = tcpsock.accept()
     print 'Got connection from ', addr
     encrypted_filename = conn.recv(BUFFER_SIZE)
-    filename = cipher.decrypt(encrypted_filename)
-    # while True:
-    #     data = conn.recv(1)
-    #     if data == '\n':
-    #         break
-    #     filename += data
+    filename = cipher.decrypt_message(encrypted_filename)
     newthread = ClientThread(addr, conn, filename)
     newthread.start()
     threads.append(newthread)
