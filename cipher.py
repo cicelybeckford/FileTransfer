@@ -1,27 +1,19 @@
-import base64
-import os
 from Crypto.Cipher import AES
+import base64, os
 
-def encrypt(data):
-	BLOCK_SIZE = 16
-	PADDING = '{'
-	pad = lambda s: s + (BLOCK_SIZE - len(s) % BLOCK_SIZE) * PADDING
-	EncodeAES = lambda c, s: base64.b64encode(c.encrypt(pad(s)))
-	secret_key = os.urandom(BLOCK_SIZE)
-	print 'encryption key: ' + secret_key
-	cipher = AES.new(secret_key)
-	# encodes you private info!
-	encoded_data = EncodeAES(cipher, data)
-	print 'Encrypted data:', encoded_data
-	return encoded_data
+BLOCK_SIZE = 16
+PADDING = "{"
+KEY = 'q|A\xb6dx\xb1\t\x00Z\x08w\xfb\x14\x19\xae'
+IV = '\xdf\xc1\xc6\xad+\xf3Q\xc5\xf2\xed\xb7\xf1\x94\x14\x87\xfe'
 
-def decrypt(encrypted_data):
-	PADDING = '{'
-	DecodeAES = lambda c, e: c.decrypt(base64.b64decode(e)).rstrip(PADDING)
-	#Key is FROM the printout of 'secret' in encryption
-	#below is the encryption.
-	encryption = encrypted_data
-	key = ''
-	cipher = AES.new(key)
-	data = DecodeAES(cipher, encryption)
-	return data
+def encrypt_message(data):
+    padded_data = data + (PADDING * ((BLOCK_SIZE - len(data)) % BLOCK_SIZE))
+    cipher = AES.new(KEY, AES.MODE_CBC, IV)
+    ciphertext = cipher.encrypt(padded_data)
+    return ciphertext
+
+def decrypt_message(encoded_ciphertext):
+    cipher = AES.new(KEY, AES.MODE_CBC, IV)
+    data = cipher.decrypt(encoded_ciphertext)
+    original = data.rstrip(PADDING)
+    return original
