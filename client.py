@@ -13,7 +13,6 @@ s.connect((TCP_IP, TCP_PORT))
 filename = "mytext.txt"
 start = time.time()
 ciphertext = cipher.encrypt_message(filename)
-print(ciphertext)
 s.send(ciphertext)
 
 with open('received_file', 'wb') as f:
@@ -31,6 +30,7 @@ with open('received_file', 'wb') as f:
                 print 'file closed'
                 break
             print 'file opened'
+            print('encrypted data = %s' % encrypted_data)
             print('data = %s' % data)
             output = 'Successfully got the file'
             f.write(data)
